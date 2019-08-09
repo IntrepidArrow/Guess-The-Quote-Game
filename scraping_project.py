@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from random import choice
 
 main_url = "http://quotes.toscrape.com/"
 
@@ -33,6 +34,28 @@ def scrape_quote_data(url):
             break
     
     return game_data
+
+# Game structure
+game_data = scrape_quote_data(main_url)
+num_of_lives = 3
+
+random_quote = choice(game_data)
+print("Who said the following words!: \n")
+print(random_quote["quote"] + "\n")
+
+while num_of_lives >= 0:
+    if num_of_lives == 0:
+        print("You are out of guesses :(\nThe correct answer is " + random_quote["author"] + "\n")
+        break
+
+    user_input = input("Who said this? Guesses remaining: " + str(num_of_lives) +". ")
+
+    if user_input.lower() == (random_quote["author"]).lower():
+        print("Congratulations! You guessed correct! The above words were indeed said by " + random_quote["author"] + "\n")
+        break
+    else:
+        print("Incorrect. Please try again.\n")
+        num_of_lives -= 1
 
 # Game Logic
 # Select random quote from the list

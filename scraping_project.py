@@ -7,7 +7,7 @@ main_url = "http://quotes.toscrape.com/"
 def scrape_quote_data(url):
     """Mehtod returns quote, author of the quote and link to author bio 
     in a list of lists, for all quotes in the website"""
-
+    count = 1
     game_data = []  # All quotes, author and author bio links will be here for game
     while True:
         response = requests.get(url)
@@ -29,47 +29,63 @@ def scrape_quote_data(url):
         #if there is a next page then scrape the next page or else quit loop
         if next_page_button:
             next_page_link = next_page_button.find("a")["href"]
-            url = f"http://quotes.toscrape.com/{next_page_link}"
+            url = f"{main_url}{next_page_link}"
         else:
             break
     
     return game_data
 
-# Game structure
-game_data = scrape_quote_data(main_url)
-num_of_lives = 3
 
-random_quote = choice(game_data)
-print("Who said the following words!: \n")
-print(random_quote["quote"] + "\n")
+def display_message(choice_quote, num_of_lives):
+    # Get author io page link to navigate for hints
+    author_bio_link = choice_quote["about"]
+    bio_response = requests.get(f"{main_url}{author_bio_link}")
+    bio_soup = BeautifulSoup(bio_response.text, "html.parser")
 
-while num_of_lives >= 0:
-    if num_of_lives == 0:
-        print("You are out of guesses :(\nThe correct answer is " + random_quote["author"] + "\n")
-        break
+    #Getting details to build hints
+    birth_date = bio_soup.find(class_="author-born-date").get_text()
+    birth_location = bio_soup.find(class_="author-born-location").get_text()
 
-    user_input = input("Who said this? Guesses remaining: " + str(num_of_lives) +". ")
+    author_name_split = (choice_quote["author"]).split()
+    first_initial = author_name_split[0][0]
+    last_initial = author_name_split[-1][0]
 
-    if user_input.lower() == (random_quote["author"]).lower():
-        print("Congratulations! You guessed correct! The above words were indeed said by " + random_quote["author"] + "\n")
-        break
+    if num_of_lives == 3:
+        return "Author was born on " + birth_date + " " + birth_location
+    elif num_of_lives == 2:
+        return "Author's first name initial is: " + first_initial
+    elif num_of_lives == 1:
+        return "Author's last name initial is: " + last_initial
     else:
-        print("Incorrect. Please try again.\n")
-        num_of_lives -= 1
+        return "You are all out of guesses :(\nThe correct answer is " + choice_quote["author"] + "\n"
 
-# Game Logic
-# Select random quote from the list
-# Ask user to guess the person who said it - check against the quote author
-# If correct:
-#   Victory message and ask to play the game again 
-# If wrong:
-#   Reduce 1 life, provide hint for quote and ask user input for author name again
-# If number of lives remaining is 0:
-#   End the game and display the current answer
-#   Defeat message
-#   Ask user for another game
-# Hints list:
-# 1 - Author birth date and location
-# 2 - Number of letters in their first and last name
-# 3 - Author first and last name initials #
+
+def run_game():
+    game_data = scrape_quote_data(main_url)
+    num_of_lives = 4
+
+    random_quote = choice(game_data)
+    print("Who said the following words!: \n")
+    print(random_quote["quote"] + "\n")
+
+    while True:
+        user_input = input("Who said this? Guesses remaining: " +
+                        str(num_of_lives) + ". ")
+
+        if user_input.lower() == (random_quote["author"]).lower():
+            print("Congratulations! You guessed correct! The above words were indeed said by " +
+                random_quote["author"] + "\n")
+            break
+        else:
+            num_of_lives -= 1
+            if num_of_lives == 0:
+                print("\n" + display_message(random_quote, 0))
+                break
+            print("Incorrect. Here's a hint: " +
+                display_message(random_quote, num_of_lives) + "\n")
+
+
+# Playing game!
+run_game()
+
 

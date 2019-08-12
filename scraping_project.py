@@ -67,6 +67,15 @@ def run_game(game_data):
             print("Incorrect. Here's a hint: " +
                 display_message(random_quote, num_of_lives) + "\n")
 
+#Asking user for another round
+    again = " "
+    while again.lower() not in ("y", "n", "yes", "no"):
+        again = input("Would you like to play again (y/n): ")
+    if again.lower() in ("yes", "y"):
+        return run_game(game_data)
+    else:
+        print("Thank you for playing! Hope you had fun!")
+
 
 if __name__ == "__main__":
     file = readfile("quotes_data.csv")

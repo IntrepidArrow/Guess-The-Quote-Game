@@ -35,14 +35,17 @@ def scrape_quote_data(url):
 
     return game_data
 
-quotes_data = scrape_quote_data(url=main_url)
 
 # Make CSV file and store all info about scraped quotes
-def write_file():
+def write_file(quotes):
     with open("quotes_data.csv", "w", encoding="utf-8") as csvfile:
         file_headers = ["quote", "author", "about"]
         writer = DictWriter(csvfile, fieldnames=file_headers)
         writer.writeheader()
 
-        for quote in quotes_data:
+        for quote in quotes:
             writer.writerow(quote)
+
+
+quotes_data = scrape_quote_data(url=main_url)
+write_file(quotes_data)

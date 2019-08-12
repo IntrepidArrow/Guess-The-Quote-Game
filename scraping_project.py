@@ -1,40 +1,24 @@
 import requests
 from bs4 import BeautifulSoup
 from random import choice
+from csv import DictReader
+import os.path
 
 main_url = "http://quotes.toscrape.com/"
 
-def scrape_quote_data(url):
-    """Mehtod returns quote, author of the quote and link to author bio 
-    in a list of lists, for all quotes in the website"""
-    count = 1
-    game_data = []  # All quotes, author and author bio links will be here for game
-    while True:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Getting all Quotes from current page and storing in a list
-        quotes = soup.find_all(class_="quote")
-        for quote in quotes:
-            text = quote.find(class_="text").get_text()
-            author = quote.find(class_="author").get_text()
-            href = quote.find("a")["href"]
-            
-            author_data = {"quote": text, "author": author, "about": href}
-            # Adding scraped information in list for game logic
-            game_data.append(author_data)
-
-        # Navigation to next page 
-        next_page_button = soup.find(class_="next")
-        #if there is a next page then scrape the next page or else quit loop
-        if next_page_button:
-            next_page_link = next_page_button.find("a")["href"]
-            url = f"{main_url}{next_page_link}"
-        else:
-            break
+def readfile(filename):
+    cwd = os.getcwd()
+    file_status = os.path.exists(cwd + "\\" + filename)
+  
+    if not file_status: # Make file in the current directory if it does not exist
+        try:
+            import scrapNstore
+        except ImportError:
+            print("Something went wrong when trying to scrape and create data_file. Try Again.")
     
-    return game_data
-
+    with open(file=filename, mode="r", encoding="utf-8") as csvfile:
+        reader = DictReader(csvfile)
+        return list(reader)
 
 def display_message(choice_quote, num_of_lives):
     # Get author io page link to navigate for hints
@@ -60,10 +44,9 @@ def display_message(choice_quote, num_of_lives):
         return "You are all out of guesses :(\nThe correct answer is " + choice_quote["author"] + "\n"
 
 
-def run_game():
-    game_data = scrape_quote_data(main_url)
-    num_of_lives = 4
+def run_game(game_data): 
 
+    num_of_lives = 4
     random_quote = choice(game_data)
     print("Who said the following words!: \n")
     print(random_quote["quote"] + "\n")
@@ -85,7 +68,9 @@ def run_game():
                 display_message(random_quote, num_of_lives) + "\n")
 
 
-# Playing game!
-run_game()
+if __name__ == "__main__":
+    file = readfile("quotes_data.csv")
+    run_game(game_data=file)
+
 
 
